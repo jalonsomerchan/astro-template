@@ -8,6 +8,8 @@ Incluye:
 - Tailwind CSS 4
 - MDX
 - Sitemap
+- i18n nativo de Astro
+- Traducciones mediante JSON por idioma
 - Layout base
 - Componentes mínimos reutilizables
 - SEO técnico básico
@@ -64,9 +66,16 @@ npm ci
 │   │   └── Header.astro
 │   ├── config/
 │   │   └── site.ts
+│   ├── i18n/
+│   │   ├── translations/
+│   │   │   ├── en.json
+│   │   │   └── es.json
+│   │   └── ui.ts
 │   ├── layouts/
 │   │   └── BaseLayout.astro
 │   ├── pages/
+│   │   ├── [locale]/
+│   │   │   └── index.astro
 │   │   ├── 404.astro
 │   │   ├── index.astro
 │   │   ├── manifest.webmanifest.ts
@@ -82,11 +91,105 @@ npm ci
 1. Usa este repositorio como template o clónalo.
 2. Cambia `name` en `package.json`.
 3. Cambia los datos de `src/config/site.ts`.
-4. Cambia `public/favicon.svg`, `public/favicon.ico` y `public/og-image.svg`.
-5. Revisa `src/pages/manifest.webmanifest.ts` si quieres cambiar color, iconos o modo de visualización.
-6. Revisa `.env.example` si necesitas sobrescribir `ASTRO_SITE` o `ASTRO_BASE`.
-7. Ejecuta `npm ci`, `npm test` y `npm run build`.
-8. Activa GitHub Pages en el repositorio usando GitHub Actions como fuente.
+4. Cambia los textos en `src/i18n/translations/*.json`.
+5. Cambia `public/favicon.svg`, `public/favicon.ico` y `public/og-image.svg`.
+6. Revisa `src/pages/manifest.webmanifest.ts` si quieres cambiar color, iconos o modo de visualización.
+7. Revisa `.env.example` si necesitas sobrescribir `ASTRO_SITE` o `ASTRO_BASE`.
+8. Ejecuta `npm ci`, `npm test` y `npm run build`.
+9. Activa GitHub Pages en el repositorio usando GitHub Actions como fuente.
+
+## Traducciones e idiomas
+
+La plantilla usa el i18n nativo de Astro en `astro.config.mjs` y una capa sencilla de traducciones en JSON.
+
+Idioma por defecto:
+
+```txt
+/
+```
+
+Otros idiomas:
+
+```txt
+/en/
+/fr/
+...
+```
+
+### Añadir una nueva traducción
+
+Añade la clave en todos los JSON dentro de:
+
+```txt
+src/i18n/translations/
+```
+
+Ejemplo:
+
+```json
+{
+  "home.title": "Título traducido"
+}
+```
+
+Después úsala en cualquier componente o página:
+
+```astro
+---
+import { useTranslations } from '../i18n/ui';
+const t = useTranslations(locale);
+---
+
+<h1>{t('home.title')}</h1>
+```
+
+### Añadir un nuevo idioma
+
+Ejemplo para añadir francés:
+
+1. Añade el idioma en `astro.config.mjs`:
+
+```js
+i18n: {
+  defaultLocale: 'es',
+  locales: ['es', 'en', 'fr'],
+  routing: {
+    prefixDefaultLocale: false,
+  },
+}
+```
+
+2. Añade el idioma en `src/config/site.ts`:
+
+```ts
+export const locales = ['es', 'en', 'fr'] as const;
+
+export const localeLabels = {
+  es: 'Español',
+  en: 'English',
+  fr: 'Français',
+};
+```
+
+3. Crea el fichero:
+
+```txt
+src/i18n/translations/fr.json
+```
+
+4. Importa y registra el JSON en `src/i18n/ui.ts`:
+
+```ts
+import fr from './translations/fr.json';
+
+const translations = {
+  es,
+  en,
+  fr,
+};
+```
+
+Con eso se generará `/fr/` usando `src/pages/[locale]/index.astro`.
 
 ## GitHub Pages
 
@@ -131,7 +234,7 @@ La configuración editable del sitio está en:
 src/config/site.ts
 ```
 
-Ahí puedes cambiar nombre, descripción, idioma, autor y URL base del proyecto.
+Ahí puedes cambiar nombre, descripción, idiomas, autor y URL base del proyecto.
 
 ## Notas
 
