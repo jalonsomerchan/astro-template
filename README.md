@@ -13,7 +13,7 @@ Incluye:
 - SEO técnico básico
 - Página 404
 - `robots.txt` dinámico
-- Manifest web
+- Manifest web dinámico
 - Imagen social por defecto
 - Tests smoke con `node:test`
 - CI en pull requests
@@ -52,7 +52,7 @@ npm ci
 │       └── pages.yml
 ├── public/
 │   ├── favicon.svg
-│   ├── manifest.webmanifest
+│   ├── favicon.ico
 │   └── og-image.svg
 ├── scripts/
 │   └── clean.mjs
@@ -69,6 +69,7 @@ npm ci
 │   ├── pages/
 │   │   ├── 404.astro
 │   │   ├── index.astro
+│   │   ├── manifest.webmanifest.ts
 │   │   └── robots.txt.ts
 │   └── styles/
 │       └── global.css
@@ -82,7 +83,7 @@ npm ci
 2. Cambia `name` en `package.json`.
 3. Cambia los datos de `src/config/site.ts`.
 4. Cambia `public/favicon.svg`, `public/favicon.ico` y `public/og-image.svg`.
-5. Actualiza `public/manifest.webmanifest`.
+5. Revisa `src/pages/manifest.webmanifest.ts` si quieres cambiar color, iconos o modo de visualización.
 6. Revisa `.env.example` si necesitas sobrescribir `ASTRO_SITE` o `ASTRO_BASE`.
 7. Ejecuta `npm ci`, `npm test` y `npm run build`.
 8. Activa GitHub Pages en el repositorio usando GitHub Actions como fuente.
