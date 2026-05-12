@@ -9,12 +9,23 @@ const translations: Record<Locale, typeof es> = {
   en,
 };
 
+function joinPaths(...parts: string[]) {
+  const cleanParts = parts
+    .filter(Boolean)
+    .map((part) => part.replace(/^\/+|\/+$/g, ''))
+    .filter(Boolean);
+
+  return `/${cleanParts.join('/')}${cleanParts.length ? '/' : ''}`;
+}
+
 export function isLocale(locale: string | undefined): locale is Locale {
   return Boolean(locale && locales.includes(locale as Locale));
 }
 
 export function getLocaleFromUrl(pathname: string): Locale {
-  const [, maybeLocale] = pathname.split('/');
+  const basePath = import.meta.env.BASE_URL ?? '/';
+  const pathnameWithoutBase = pathname.replace(new RegExp(`^${basePath}`), '/');
+  const [, maybeLocale] = pathnameWithoutBase.split('/');
 
   if (isLocale(maybeLocale)) {
     return maybeLocale;
@@ -30,13 +41,14 @@ export function useTranslations(locale: Locale) {
 }
 
 export function getLocalizedPath(path: string, locale: Locale): string {
-  const cleanPath = `/${path.replace(/^\//, '')}`;
+  const basePath = import.meta.env.BASE_URL ?? '/';
+  const cleanPath = path.replace(/^\//, '');
 
   if (locale === defaultLocale) {
-    return cleanPath;
+    return joinPaths(basePath, cleanPath);
   }
 
-  return `/${locale}${cleanPath === '/' ? '' : cleanPath}`;
+  return joinPaths(basePath, locale, cleanPath);
 }
 
 export function getAlternateLocales(currentLocale: Locale) {
