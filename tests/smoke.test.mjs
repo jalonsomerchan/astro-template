@@ -20,6 +20,7 @@ describe('project smoke checks', () => {
       'astro.config.mjs',
       'src/pages/index.astro',
       'src/pages/404.astro',
+      'src/pages/manifest.webmanifest.ts',
       'src/pages/robots.txt.ts',
       'src/layouts/BaseLayout.astro',
       'src/config/site.ts',
@@ -27,6 +28,14 @@ describe('project smoke checks', () => {
     ].forEach((path) => {
       assert.equal(existsSync(join(root, path)), true, `${path} should exist`);
     });
+  });
+
+  it('keeps template metadata files available', () => {
+    ['.nvmrc', '.env.example', '.gitignore', '.prettierrc', '.prettierignore', 'README.md'].forEach(
+      (path) => {
+        assert.equal(existsSync(join(root, path)), true, `${path} should exist`);
+      }
+    );
   });
 
   it('keeps the expected npm scripts available', () => {
@@ -66,6 +75,7 @@ describe('project smoke checks', () => {
 
     assert.match(readme, /GitHub Pages/);
     assert.match(readme, /src\/config\/site\.ts/);
+    assert.match(readme, /manifest\.webmanifest\.ts/);
     assert.match(readme, /npm run build/);
   });
 });
