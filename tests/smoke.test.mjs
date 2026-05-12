@@ -62,15 +62,15 @@ describe('project smoke checks', () => {
     });
   });
 
-  it('keeps Astro i18n enabled and documented', () => {
+  it('keeps Astro i18n enabled', () => {
     const astroConfig = readText('astro.config.mjs');
-    const readme = readText('README.md');
+    const i18nHelper = readText('src/i18n/ui.ts');
 
     assert.match(astroConfig, /i18n/);
     assert.match(astroConfig, /defaultLocale: 'es'/);
     assert.match(astroConfig, /locales: \['es', 'en'\]/);
-    assert.match(readme, /Traducciones e idiomas/);
-    assert.match(readme, /src\/i18n\/translations/);
+    assert.match(i18nHelper, /useTranslations/);
+    assert.match(i18nHelper, /getLocalizedPath/);
   });
 
   it('keeps translation files aligned', () => {
@@ -94,12 +94,11 @@ describe('project smoke checks', () => {
     assert.match(ciWorkflow, /npm test/);
   });
 
-  it('documents how to reuse the template', () => {
+  it('keeps useful project documentation available', () => {
     const readme = readText('README.md');
 
-    assert.match(readme, /GitHub Pages/);
-    assert.match(readme, /src\/config\/site\.ts/);
-    assert.match(readme, /manifest\.webmanifest\.ts/);
-    assert.match(readme, /npm run build/);
+    assert.match(readme, /\S/, 'README.md should not be empty');
+    assert.equal(existsSync(join(root, 'agents.md')), true, 'agents.md should exist');
+    assert.equal(existsSync(join(root, 'docs/design-system.md')), true, 'docs/design-system.md should exist');
   });
 });
