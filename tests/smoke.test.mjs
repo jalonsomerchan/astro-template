@@ -9,11 +9,24 @@ function readJson(path) {
   return JSON.parse(readFileSync(join(root, path), 'utf8'));
 }
 
+function readText(path) {
+  return readFileSync(join(root, path), 'utf8');
+}
+
 describe('project smoke checks', () => {
   it('has the minimum files needed by Astro', () => {
-    assert.equal(existsSync(join(root, 'package.json')), true);
-    assert.equal(existsSync(join(root, 'astro.config.mjs')), true);
-    assert.equal(existsSync(join(root, 'src/pages/index.astro')), true);
+    [
+      'package.json',
+      'astro.config.mjs',
+      'src/pages/index.astro',
+      'src/pages/404.astro',
+      'src/pages/robots.txt.ts',
+      'src/layouts/BaseLayout.astro',
+      'src/config/site.ts',
+      'src/styles/global.css',
+    ].forEach((path) => {
+      assert.equal(existsSync(join(root, path)), true, `${path} should exist`);
+    });
   });
 
   it('keeps the expected npm scripts available', () => {
@@ -23,15 +36,36 @@ describe('project smoke checks', () => {
     assert.equal(pkg.scripts?.build, 'astro build');
     assert.equal(pkg.scripts?.preview, 'astro preview');
     assert.ok(pkg.scripts?.test?.includes('node --test'));
+    assert.ok(pkg.scripts?.clean?.includes('scripts/clean.mjs'));
   });
 
-  it('includes a GitHub Pages workflow', () => {
-    const workflowPath = join(root, '.github/workflows/pages.yml');
-    assert.equal(existsSync(workflowPath), true);
+  it('keeps basic template components available', () => {
+    ['Button', 'Container', 'Footer', 'Header'].forEach((component) => {
+      assert.equal(
+        existsSync(join(root, `src/components/${component}.astro`)),
+        true,
+        `${component}.astro should exist`
+      );
+    });
+  });
 
-    const workflow = readFileSync(workflowPath, 'utf8');
-    assert.match(workflow, /actions\/deploy-pages@v4/);
-    assert.match(workflow, /npm run build/);
-    assert.match(workflow, /npm test/);
+  it('includes GitHub workflows for CI and Pages', () => {
+    const pagesWorkflow = readText('.github/workflows/pages.yml');
+    const ciWorkflow = readText('.github/workflows/ci.yml');
+
+    assert.match(pagesWorkflow, /actions\/deploy-pages@v4/);
+    assert.match(pagesWorkflow, /npm run build/);
+    assert.match(pagesWorkflow, /npm test/);
+    assert.match(ciWorkflow, /pull_request/);
+    assert.match(ciWorkflow, /npm run build/);
+    assert.match(ciWorkflow, /npm test/);
+  });
+
+  it('documents how to reuse the template', () => {
+    const readme = readText('README.md');
+
+    assert.match(readme, /GitHub Pages/);
+    assert.match(readme, /src\/config\/site\.ts/);
+    assert.match(readme, /npm run build/);
   });
 });
