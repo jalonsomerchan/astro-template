@@ -1,17 +1,22 @@
 ---
-
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Button from '../components/Button.astro';
+import Container from '../components/Container.astro';
+import { siteConfig } from '../config/site';
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<BaseLayout title={siteConfig.name} description={siteConfig.description}>
+  <Container class="py-20">
+    <section class="mx-auto max-w-3xl text-center">
+      <p class="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-[var(--color-primary)]">Astro starter</p>
+      <h1 class="text-4xl font-black tracking-tight sm:text-6xl">Plantilla base para proyectos Astro</h1>
+      <p class="mx-auto mt-6 max-w-2xl text-lg text-[var(--color-muted)]">
+        Una base sencilla con Tailwind, MDX, sitemap, SEO técnico, GitHub Pages y tests smoke para empezar proyectos sin repetir configuración.
+      </p>
+      <div class="mt-8 flex flex-wrap justify-center gap-3">
+        <Button href="https://docs.astro.build/">Documentación de Astro</Button>
+        <Button href="https://github.com/jalonsomerchan/astro-template" variant="secondary">Repositorio</Button>
+      </div>
+    </section>
+  </Container>
+</BaseLayout>
