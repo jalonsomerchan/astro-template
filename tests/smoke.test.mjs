@@ -19,11 +19,15 @@ describe('project smoke checks', () => {
       'package.json',
       'astro.config.mjs',
       'src/pages/index.astro',
+      'src/pages/[locale]/index.astro',
       'src/pages/404.astro',
       'src/pages/manifest.webmanifest.ts',
       'src/pages/robots.txt.ts',
       'src/layouts/BaseLayout.astro',
       'src/config/site.ts',
+      'src/i18n/ui.ts',
+      'src/i18n/translations/es.json',
+      'src/i18n/translations/en.json',
       'src/styles/global.css',
     ].forEach((path) => {
       assert.equal(existsSync(join(root, path)), true, `${path} should exist`);
@@ -56,6 +60,26 @@ describe('project smoke checks', () => {
         `${component}.astro should exist`
       );
     });
+  });
+
+  it('keeps Astro i18n enabled and documented', () => {
+    const astroConfig = readText('astro.config.mjs');
+    const readme = readText('README.md');
+
+    assert.match(astroConfig, /i18n/);
+    assert.match(astroConfig, /defaultLocale: 'es'/);
+    assert.match(astroConfig, /locales: \['es', 'en'\]/);
+    assert.match(readme, /Traducciones e idiomas/);
+    assert.match(readme, /src\/i18n\/translations/);
+  });
+
+  it('keeps translation files aligned', () => {
+    const es = readJson('src/i18n/translations/es.json');
+    const en = readJson('src/i18n/translations/en.json');
+
+    assert.deepEqual(Object.keys(en).sort(), Object.keys(es).sort());
+    assert.ok(es['home.title']);
+    assert.ok(en['home.title']);
   });
 
   it('includes GitHub workflows for CI and Pages', () => {
