@@ -1,0 +1,10 @@
+---
+import Container from './Container.astro';
+import { siteConfig } from '../config/site';
+---
+
+<footer class="border-t border-[var(--color-border)]">
+  <Container class="py-6 text-sm text-[var(--color-muted)]">
+    <p>© {new Date().getFullYear()} {siteConfig.name}. Creado con Astro.</p>
+  </Container>
+</footer>
