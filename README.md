@@ -21,6 +21,7 @@ Incluye:
 - CI en pull requests
 - Despliegue automático en GitHub Pages
 - Dependabot para npm y GitHub Actions
+- Documentación específica para agentes IA
 
 ## Requisitos
 
@@ -52,6 +53,13 @@ npm ci
 │   └── workflows/
 │       ├── ci.yml
 │       └── pages.yml
+├── docs/
+│   ├── ai-checklist.md
+│   ├── design-system.md
+│   ├── github-pages.md
+│   ├── i18n-guide.md
+│   ├── template-usage.md
+│   └── testing-guide.md
 ├── public/
 │   ├── favicon.svg
 │   ├── favicon.ico
@@ -85,6 +93,18 @@ npm ci
 └── tests/
     └── smoke.test.mjs
 ```
+
+## Documentación para agentes IA
+
+Antes de modificar el template, una IA debe leer:
+
+- `agents.md`: reglas principales del repositorio.
+- `docs/ai-checklist.md`: checklist rápida antes de cerrar tareas.
+- `docs/template-usage.md`: cómo usar y modificar la plantilla.
+- `docs/i18n-guide.md`: cómo añadir textos, traducciones e idiomas.
+- `docs/github-pages.md`: cómo evitar romper GitHub Pages y `base`.
+- `docs/testing-guide.md`: cómo mantener tests smoke.
+- `docs/design-system.md`: reglas visuales, SEO, accesibilidad y responsive.
 
 ## Crear un proyecto nuevo desde esta plantilla
 
