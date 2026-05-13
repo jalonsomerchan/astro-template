@@ -1,6 +1,7 @@
 {
   "site.description": "Base template for creating projects with Astro.",
   "nav.home": "Home",
+  "nav.main": "Main navigation",
   "footer.createdWith": "Created with Astro.",
   "home.eyebrow": "Astro starter",
   "home.title": "Base template for Astro projects",
