@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
@@ -11,6 +11,32 @@ function readJson(path) {
 
 function readText(path) {
   return readFileSync(join(root, path), 'utf8');
+}
+
+function parseConstString(source, name) {
+  const match = source.match(new RegExp(`export\\s+const\\s+${name}\\s*=\\s*['\"]([^'\"]+)['\"]`));
+  assert.ok(match, `Could not find exported const ${name}`);
+
+  return match[1];
+}
+
+function parseConstStringArray(source, name) {
+  const match = source.match(new RegExp(`export\\s+const\\s+${name}\\s*=\\s*\\[([^\\]]+)\\]`));
+  assert.ok(match, `Could not find exported array const ${name}`);
+
+  const values = [...match[1].matchAll(/['\"]([^'\"]+)['\"]/g)].map(([, value]) => value);
+  assert.ok(values.length > 0, `${name} should contain at least one value`);
+
+  return values;
+}
+
+function getConfiguredI18n() {
+  const siteConfig = readText('src/config/site.ts');
+
+  return {
+    defaultLocale: parseConstString(siteConfig, 'defaultLocale'),
+    locales: parseConstStringArray(siteConfig, 'locales'),
+  };
 }
 
 describe('project smoke checks', () => {
@@ -26,8 +52,7 @@ describe('project smoke checks', () => {
       'src/layouts/BaseLayout.astro',
       'src/config/site.ts',
       'src/i18n/ui.ts',
-      'src/i18n/translations/es.json',
-      'src/i18n/translations/en.json',
+      'src/i18n/translations',
       'src/styles/global.css',
     ].forEach((path) => {
       assert.equal(existsSync(join(root, path)), true, `${path} should exist`);
@@ -62,24 +87,54 @@ describe('project smoke checks', () => {
     });
   });
 
-  it('keeps Astro i18n enabled', () => {
+  it('keeps Astro i18n enabled and aligned with site config', () => {
     const astroConfig = readText('astro.config.mjs');
-    const i18nHelper = readText('src/i18n/ui.ts');
+    const readme = readText('README.md');
+    const { defaultLocale, locales } = getConfiguredI18n();
 
     assert.match(astroConfig, /i18n/);
-    assert.match(astroConfig, /defaultLocale: 'es'/);
-    assert.match(astroConfig, /locales: \['es', 'en'\]/);
-    assert.match(i18nHelper, /useTranslations/);
-    assert.match(i18nHelper, /getLocalizedPath/);
+    assert.match(astroConfig, new RegExp(`defaultLocale:\\s*['\"]${defaultLocale}['\"]`));
+
+    locales.forEach((locale) => {
+      assert.match(
+        astroConfig,
+        new RegExp(`['\"]${locale}['\"]`),
+        `${locale} should be configured in Astro i18n locales`
+      );
+      assert.equal(
+        existsSync(join(root, `src/i18n/translations/${locale}.json`)),
+        true,
+        `${locale}.json should exist`
+      );
+    });
+
+    assert.match(readme, /Traducciones e idiomas/);
+    assert.match(readme, /src\/i18n\/translations/);
   });
 
-  it('keeps translation files aligned', () => {
-    const es = readJson('src/i18n/translations/es.json');
-    const en = readJson('src/i18n/translations/en.json');
+  it('keeps translation files aligned with configured locales', () => {
+    const { defaultLocale, locales } = getConfiguredI18n();
+    const defaultTranslations = readJson(`src/i18n/translations/${defaultLocale}.json`);
+    const expectedKeys = Object.keys(defaultTranslations).sort();
+    const translationFiles = readdirSync(join(root, 'src/i18n/translations'))
+      .filter((file) => file.endsWith('.json'))
+      .map((file) => file.replace(/\.json$/, ''));
 
-    assert.deepEqual(Object.keys(en).sort(), Object.keys(es).sort());
-    assert.ok(es['home.title']);
-    assert.ok(en['home.title']);
+    assert.deepEqual(
+      [...translationFiles].sort(),
+      [...locales].sort(),
+      'translation JSON files should match configured locales'
+    );
+
+    locales.forEach((locale) => {
+      const translations = readJson(`src/i18n/translations/${locale}.json`);
+      assert.deepEqual(
+        Object.keys(translations).sort(),
+        expectedKeys,
+        `${locale}.json keys should match ${defaultLocale}.json`
+      );
+      assert.ok(translations['home.title'], `${locale}.json should include home.title`);
+    });
   });
 
   it('includes GitHub workflows for CI and Pages', () => {
