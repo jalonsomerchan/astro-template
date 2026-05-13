@@ -1,6 +1,7 @@
 {
   "site.description": "Plantilla base para crear proyectos con Astro.",
   "nav.home": "Inicio",
+  "nav.main": "Navegación principal",
   "footer.createdWith": "Creado con Astro.",
   "home.eyebrow": "Astro starter",
   "home.title": "Plantilla base para proyectos Astro",
