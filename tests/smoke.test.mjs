@@ -53,6 +53,7 @@ describe('project smoke checks', () => {
       'src/config/site.ts',
       'src/i18n/ui.ts',
       'src/i18n/translations',
+      'src/utils/paths.ts',
       'src/styles/global.css',
     ].forEach((path) => {
       assert.equal(existsSync(join(root, path)), true, `${path} should exist`);
@@ -134,7 +135,44 @@ describe('project smoke checks', () => {
         `${locale}.json keys should match ${defaultLocale}.json`
       );
       assert.ok(translations['home.title'], `${locale}.json should include home.title`);
+      assert.ok(translations['nav.main'], `${locale}.json should include nav.main`);
     });
+  });
+
+  it('keeps routing and assets compatible with root and subpath deployments', () => {
+    const layout = readText('src/layouts/BaseLayout.astro');
+    const manifest = readText('src/pages/manifest.webmanifest.ts');
+    const robots = readText('src/pages/robots.txt.ts');
+    const i18nHelper = readText('src/i18n/ui.ts');
+    const pathHelpers = readText('src/utils/paths.ts');
+
+    [layout, manifest, robots, i18nHelper].forEach((source) => {
+      assert.match(source, /withBasePath|getLocalizedPath|stripBasePath/);
+      assert.doesNotMatch(source, /href=\"\//);
+      assert.doesNotMatch(source, /src=\"\//);
+    });
+
+    assert.match(pathHelpers, /withBasePath/);
+    assert.match(pathHelpers, /stripBasePath/);
+    assert.match(pathHelpers, /getAbsoluteUrl/);
+    assert.match(manifest, /start_url/);
+    assert.match(robots, /sitemap-index\.xml/);
+  });
+
+  it('keeps starter links and labels configurable or translated', () => {
+    const siteConfig = readText('src/config/site.ts');
+    const header = readText('src/components/Header.astro');
+    const home = readText('src/pages/index.astro');
+    const localizedHome = readText('src/pages/[locale]/index.astro');
+    const envExample = readText('.env.example');
+
+    assert.match(siteConfig, /repositoryUrl/);
+    assert.match(envExample, /PUBLIC_REPOSITORY_URL/);
+    assert.match(header, /t\('nav\.main'\)/);
+    assert.match(home, /siteConfig\.repositoryUrl/);
+    assert.match(localizedHome, /siteConfig\.repositoryUrl/);
+    assert.doesNotMatch(home, /https:\/\/github\.com\/jalonsomerchan\/astro-template/);
+    assert.doesNotMatch(localizedHome, /https:\/\/github\.com\/jalonsomerchan\/astro-template/);
   });
 
   it('includes GitHub workflows for CI and Pages', () => {
