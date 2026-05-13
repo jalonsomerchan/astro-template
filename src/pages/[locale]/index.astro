@@ -28,7 +28,7 @@ const t = useTranslations(locale);
       </p>
       <div class="mt-8 flex flex-wrap justify-center gap-3">
         <Button href="https://docs.astro.build/">{t('home.docs')}</Button>
-        <Button href="https://github.com/jalonsomerchan/astro-template" variant="secondary">{t('home.repository')}</Button>
+        <Button href={siteConfig.repositoryUrl} variant="secondary">{t('home.repository')}</Button>
       </div>
     </section>
   </Container>
