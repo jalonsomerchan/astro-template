@@ -1,9 +1,8 @@
 import { siteConfig } from '../config/site';
+import { getAbsoluteUrl, withBasePath } from '../utils/paths';
 
 export function GET() {
-  const basePath = import.meta.env.BASE_URL ?? siteConfig.base;
-  const sitemapPath = `${basePath.replace(/\/$/, '')}/sitemap-index.xml`;
-  const sitemapUrl = new URL(sitemapPath, siteConfig.url).toString();
+  const sitemapUrl = getAbsoluteUrl(withBasePath('sitemap-index.xml'), siteConfig.url);
 
   return new Response(`User-agent: *\nAllow: /\n\nSitemap: ${sitemapUrl}\n`, {
     headers: {

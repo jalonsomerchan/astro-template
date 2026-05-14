@@ -1,4 +1,5 @@
 import { defaultLocale, locales, type Locale } from '../config/site';
+import { joinPathSegments, stripBasePath, withBasePath } from '../utils/paths';
 import en from './translations/en.json';
 import es from './translations/es.json';
 
@@ -9,22 +10,12 @@ const translations: Record<Locale, typeof es> = {
   en,
 };
 
-function joinPaths(...parts: string[]) {
-  const cleanParts = parts
-    .filter(Boolean)
-    .map((part) => part.replace(/^\/+|\/+$/g, ''))
-    .filter(Boolean);
-
-  return `/${cleanParts.join('/')}${cleanParts.length ? '/' : ''}`;
-}
-
 export function isLocale(locale: string | undefined): locale is Locale {
   return Boolean(locale && locales.includes(locale as Locale));
 }
 
 export function getLocaleFromUrl(pathname: string): Locale {
-  const basePath = import.meta.env.BASE_URL ?? '/';
-  const pathnameWithoutBase = pathname.replace(new RegExp(`^${basePath}`), '/');
+  const pathnameWithoutBase = stripBasePath(pathname);
   const [, maybeLocale] = pathnameWithoutBase.split('/');
 
   if (isLocale(maybeLocale)) {
@@ -41,14 +32,13 @@ export function useTranslations(locale: Locale) {
 }
 
 export function getLocalizedPath(path: string, locale: Locale): string {
-  const basePath = import.meta.env.BASE_URL ?? '/';
   const cleanPath = path.replace(/^\//, '');
 
   if (locale === defaultLocale) {
-    return joinPaths(basePath, cleanPath);
+    return withBasePath(cleanPath);
   }
 
-  return joinPaths(basePath, locale, cleanPath);
+  return withBasePath(joinPathSegments(locale, cleanPath));
 }
 
 export function getAlternateLocales(currentLocale: Locale) {

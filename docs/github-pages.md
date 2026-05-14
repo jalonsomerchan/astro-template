@@ -1,6 +1,6 @@
 # Guía de GitHub Pages para agentes IA
 
-Esta plantilla está preparada para desplegar proyectos Astro en GitHub Pages mediante GitHub Actions.
+Esta base está preparada para desplegar proyectos Astro en dominio raíz o en subruta mediante GitHub Actions u otros hostings estáticos.
 
 ## Archivos relacionados
 
@@ -8,6 +8,7 @@ Esta plantilla está preparada para desplegar proyectos Astro en GitHub Pages me
 astro.config.mjs
 .github/workflows/pages.yml
 .github/workflows/ci.yml
+src/utils/paths.ts
 src/pages/robots.txt.ts
 src/pages/manifest.webmanifest.ts
 src/layouts/BaseLayout.astro
@@ -26,10 +27,20 @@ const base = process.env.ASTRO_BASE ?? (process.env.GITHUB_ACTIONS ? `/${reposit
 Esto permite:
 
 - Desarrollo local en `/`.
-- GitHub Pages en `/nombre-repo/`.
-- Dominio propio con `ASTRO_BASE=/`.
+- Dominio propio en `/` con `ASTRO_BASE=/`.
+- GitHub Pages o subcarpetas en `/nombre-repo/`.
 
 ## Regla principal
+
+El proyecto debe funcionar tanto en raíz de dominio como en subruta.
+
+Ejemplos válidos:
+
+```txt
+https://example.com/
+https://example.com/proyecto/
+https://usuario.github.io/nombre-repo/
+```
 
 No uses rutas internas absolutas si deben funcionar bajo una subcarpeta.
 
@@ -46,11 +57,13 @@ Preferir:
 <a href={getLocalizedPath('/contacto/', locale)}>Contacto</a>
 ```
 
-Para assets en layouts o componentes:
+Para assets, canonical, Open Graph, robots, manifest o sitemap, usa helpers compartidos desde `src/utils/paths.ts`.
 
 ```ts
-const basePath = import.meta.env.BASE_URL;
-const withBase = (path: string) => `${basePath.replace(/\/$/, '')}/${path.replace(/^\//, '')}`;
+import { getAbsoluteUrl, withBasePath } from '../utils/paths';
+
+const iconPath = withBasePath('favicon.svg');
+const canonicalUrl = getAbsoluteUrl(withBasePath('/blog/'), siteConfig.url);
 ```
 
 ## Rutas localizadas
@@ -68,18 +81,18 @@ const href = getLocalizedPath('/blog/', locale);
 <a href={href}>Blog</a>
 ```
 
-En GitHub Pages, esto genera rutas compatibles con `BASE_URL`.
+En subrutas y GitHub Pages, esto genera rutas compatibles con `BASE_URL`.
 
 ## Assets públicos
 
 Los archivos de `public/` se sirven desde la raíz del build, pero si hay `base`, Astro los servirá bajo esa base.
 
-Cuando enlaces assets manualmente en HTML, usa `BASE_URL` o un helper equivalente.
+Cuando enlaces assets manualmente en HTML, usa `withBasePath`.
 
 Correcto:
 
 ```astro
-<link rel="icon" href={withBase('favicon.svg')} />
+<link rel="icon" href={withBasePath('favicon.svg')} />
 ```
 
 Incorrecto:
@@ -130,6 +143,12 @@ ASTRO_SITE=https://usuario.github.io
 ASTRO_BASE=/nombre-repo
 ```
 
+Para cambiar el enlace al repositorio mostrado en la UI inicial:
+
+```env
+PUBLIC_REPOSITORY_URL=https://github.com/usuario/nombre-repo
+```
+
 ## Robots y sitemap
 
 `src/pages/robots.txt.ts` debe generar la URL del sitemap respetando `BASE_URL`.
@@ -152,20 +171,24 @@ https://usuario.github.io/nombre-repo/sitemap-index.xml
 
 No volver a moverlo a `public/manifest.webmanifest` salvo que se resuelva bien `start_url` e iconos con `base`.
 
-## Checklist antes de tocar Pages
+## Checklist antes de tocar Pages o rutas
 
 - ¿`npm run build` seguirá generando `dist/`?
 - ¿`pages.yml` sigue subiendo `./dist`?
 - ¿Las rutas internas respetan `BASE_URL`?
 - ¿Los assets públicos enlazados manualmente respetan `BASE_URL`?
+- ¿Funciona con `ASTRO_BASE=/`?
+- ¿Funciona con `ASTRO_BASE=/nombre-repo`?
 - ¿`robots.txt` apunta al sitemap correcto con subcarpeta?
-- ¿`manifest.webmanifest` tiene `start_url` compatible con GitHub Pages?
+- ¿`manifest.webmanifest` tiene `start_url` compatible con subrutas?
+- ¿Canonical y Open Graph evitan duplicar `base`?
 - ¿La configuración permite dominio propio usando `ASTRO_SITE` y `ASTRO_BASE`?
 
 ## Qué evitar
 
 - Cambiar `base` a un valor fijo sin motivo.
 - Usar `/` para assets o enlaces internos en componentes compartidos.
+- Duplicar helpers de rutas en layouts, páginas o componentes.
 - Quitar `npm test` del workflow de Pages.
 - Quitar `npm run build` del workflow de CI.
 - Añadir pasos lentos al despliegue sin necesidad.

@@ -35,6 +35,7 @@ Si existe conflicto entre una tarea y estas reglas, el agente debe cumplir la pe
 - Componentes reutilizables.
 - Variables CSS globales para colores, radios, sombras, espaciados y transiciones.
 - Mantener el soporte i18n de Astro.
+- Mantener compatibilidad con despliegues en dominio raíz (`/`) y en subruta (`/nombre-del-repositorio/` o similar).
 - Mantener compatibilidad con GitHub Pages en subcarpeta cuando aplique.
 - Mantener tests smoke simples y útiles.
 - Mantener los ficheros lo más pequeños posible.
@@ -51,7 +52,7 @@ Todo agente IA debe aplicar estas reglas en cualquier cambio:
 3. No añadir texto visible en un único idioma dentro de componentes, layouts o páginas reutilizables.
 4. No dejar idiomas incompletos: toda clave nueva debe existir en todos los JSON de traducción configurados.
 5. No añadir dependencias si la solución puede hacerse razonablemente con Astro, TypeScript, CSS, Tailwind o APIs nativas.
-6. No romper rutas con `base`, i18n, SEO básico, accesibilidad ni tests existentes.
+6. No romper rutas con `base`, despliegues en raíz/subruta, i18n, SEO básico, accesibilidad ni tests existentes.
 7. No eliminar tests para ocultar problemas: corregir el código o actualizar el test de forma robusta.
 8. No duplicar lógica entre idiomas, páginas o componentes si puede centralizarse.
 9. No crear ficheros grandes por comodidad; preferir piezas pequeñas con nombres claros.
@@ -66,7 +67,7 @@ Ese prompt debe cumplir estas condiciones:
 - Hacer referencia explícita a este repositorio e incluir su URL.
 - Explicar con claridad qué problema, mejora o tarea debe resolverse.
 - Indicar que la solución debe respetar todas las condiciones de este `AGENTS.md`.
-- Indicar que se deben mantener ficheros pequeños, modularidad, i18n, accesibilidad, SEO, rendimiento y compatibilidad con GitHub Pages cuando aplique.
+- Indicar que se deben mantener ficheros pequeños, modularidad, i18n, accesibilidad, SEO, rendimiento y compatibilidad con dominio raíz, subrutas y GitHub Pages cuando aplique.
 - Pedir que se actualicen tests y documentación cuando el cambio lo requiera.
 - Evitar instrucciones ambiguas sin contexto suficiente.
 
@@ -77,7 +78,7 @@ Formato recomendado:
 
 Trabaja en este repositorio: [añade aquí la URL del repositorio].
 
-Resuelve esta issue manteniendo todas las condiciones descritas en `AGENTS.md`: ficheros lo más pequeños posible, código modular, soporte completo de idiomas/i18n, accesibilidad, SEO, rendimiento, compatibilidad con GitHub Pages cuando aplique y tests smoke útiles.
+Resuelve esta issue manteniendo todas las condiciones descritas en `AGENTS.md`: ficheros lo más pequeños posible, código modular, soporte completo de idiomas/i18n, accesibilidad, SEO, rendimiento, compatibilidad con dominio raíz (`/`), subrutas (`/nombre-del-repositorio/`) y GitHub Pages cuando aplique, además de tests smoke útiles.
 
 [Describe aquí la tarea concreta, el comportamiento esperado y los ficheros o zonas afectadas si se conocen.]
 
@@ -180,7 +181,7 @@ No debe asumir que un fichero existe sin comprobarlo.
 
 - Si se toca código fuente, intentar mantener o actualizar tests.
 - Si se toca i18n, comprobar que todos los JSON siguen alineados.
-- Si se toca routing, comprobar compatibilidad con `base` y GitHub Pages.
+- Si se toca routing, comprobar compatibilidad con `base`, dominio raíz, subrutas y GitHub Pages.
 - Si se toca UI, comprobar responsive, dark mode y accesibilidad básica.
 - Si no se pueden ejecutar tests, indicarlo claramente en la PR.
 
@@ -283,14 +284,22 @@ La base del proyecto usa:
 
 ## Reglas para modificar el proyecto
 
-### No romper GitHub Pages
+### No romper rutas, dominio raíz, subrutas ni GitHub Pages
 
-Si la web se despliega en una subcarpeta, por ejemplo `/nombre-del-repositorio/`, no crear enlaces internos o assets con rutas absolutas duras tipo `/archivo.svg` si deben respetar `base`.
+El proyecto debe funcionar tanto si se aloja en la raíz de un dominio (`https://example.com/`) como si se aloja en una subruta (`https://example.com/proyecto/`, GitHub Pages u otro hosting similar).
+
+No crear enlaces internos o assets con rutas absolutas duras tipo `/archivo.svg`, `/assets/...` o `/ruta/` si deben respetar `base` o funcionar dentro de una subcarpeta.
 
 Usar helpers existentes cuando aplique:
 
 - `getLocalizedPath('/', locale)` para URLs internas localizadas.
 - `import.meta.env.BASE_URL` para assets y rutas que dependan del `base`.
+- Utilidades centralizadas de rutas si existen en el proyecto.
+
+Antes de terminar cualquier cambio que afecte a rutas, assets, navegación, manifest, robots, sitemap, canonical, Open Graph o enlaces internos, comprobar mentalmente ambos escenarios:
+
+- dominio raíz: `base = '/'`.
+- subruta: `base = '/nombre-del-repositorio/'`.
 
 ### No romper i18n
 
@@ -324,7 +333,8 @@ Si se cambia una convención importante, actualizar el documento correspondiente
 - ¿Se han aplicado las reglas de este `AGENTS.md`?
 - ¿Sigue funcionando el idioma por defecto en `/`?
 - ¿Siguen funcionando los idiomas secundarios como `/en/` y cualquier otro locale configurado?
-- ¿Las rutas internas respetan GitHub Pages con subcarpeta cuando aplica?
+- ¿Las rutas internas funcionan tanto con `base = '/'` como con `base = '/nombre-del-repositorio/'`?
+- ¿Los assets, enlaces, canonical, Open Graph, manifest, robots y sitemap respetan `base` cuando aplica?
 - ¿Los textos nuevos están en todos los JSON de traducción?
 - ¿Las claves de traducción siguen alineadas entre idiomas?
 - ¿Los ficheros modificados siguen siendo pequeños y con una responsabilidad clara?
@@ -350,7 +360,7 @@ npm run clean
 - Convertir el proyecto en algo difícil de reutilizar o mantener.
 - Añadir frameworks de UI pesados sin necesidad.
 - Duplicar layouts por idioma si se puede resolver con traducciones.
-- Usar rutas absolutas que fallen en GitHub Pages.
+- Usar rutas absolutas que fallen en despliegues con subruta o GitHub Pages.
 - Saltarse los JSON de traducción.
 - Borrar tests smoke porque parezcan simples.
 - Usar fuentes externas.

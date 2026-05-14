@@ -4,6 +4,7 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import { defaultLocale, siteConfig, type Locale } from '../config/site';
 import { useTranslations } from '../i18n/ui';
+import { getAbsoluteUrl, stripBasePath, withBasePath } from '../utils/paths';
 
 interface Props {
   title?: string;
@@ -21,10 +22,9 @@ const {
 const t = useTranslations(locale);
 const description = Astro.props.description ?? t('site.description');
 const pageTitle = title === siteConfig.name ? title : `${title} · ${siteConfig.name}`;
-const basePath = import.meta.env.BASE_URL ?? siteConfig.base;
-const withBase = (path: string) => `${basePath.replace(/\/$/, '')}/${path.replace(/^\//, '')}`;
-const canonicalUrl = new URL(Astro.url.pathname, siteConfig.url).toString();
-const imageUrl = new URL(withBase(image), siteConfig.url).toString();
+const routePath = stripBasePath(Astro.url.pathname);
+const canonicalUrl = getAbsoluteUrl(withBasePath(routePath), siteConfig.url);
+const imageUrl = getAbsoluteUrl(withBasePath(image), siteConfig.url);
 const ogLocale = locale === 'es' ? 'es_ES' : 'en_US';
 ---
 
@@ -37,9 +37,9 @@ const ogLocale = locale === 'es' ? 'es_ES' : 'en_US';
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonicalUrl} />
-    <link rel="icon" type="image/svg+xml" href={withBase('favicon.svg')} />
-    <link rel="icon" href={withBase('favicon.ico')} />
-    <link rel="manifest" href={withBase('manifest.webmanifest')} />
+    <link rel="icon" type="image/svg+xml" href={withBasePath('favicon.svg')} />
+    <link rel="icon" href={withBasePath('favicon.ico')} />
+    <link rel="manifest" href={withBasePath('manifest.webmanifest')} />
     <meta property="og:type" content="website" />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
