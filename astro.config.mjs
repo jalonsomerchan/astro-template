@@ -4,6 +4,7 @@ import { defineConfig } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
 import mdx from '@astrojs/mdx';
 import sitemap from '@astrojs/sitemap';
+import icon from 'astro-icon';
 
 const repositoryName = process.env.GITHUB_REPOSITORY?.split('/')[1] ?? 'astro-template';
 const site = process.env.ASTRO_SITE ?? `https://${process.env.GITHUB_REPOSITORY_OWNER ?? 'jalonsomerchan'}.github.io`;
@@ -26,5 +27,6 @@ export default defineConfig({
     plugins: [tailwindcss()]
   },
 
-  integrations: [mdx(), sitemap()]
+  integrations: [mdx(), sitemap(), icon()]
+
 });
